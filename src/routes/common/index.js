@@ -1,5 +1,6 @@
 import bookingRoute from './booking.route';
 import homeRoute from './home.route';
+import invoiceRoute from './invoice.route';
 import menuRoute from './menu.route';
 
 const commonRoute = {
@@ -16,6 +17,10 @@ const commonRoute = {
       {
          path: 'booking',
          route: bookingRoute,
+      },
+      {
+         path: 'cart',
+         route: invoiceRoute,
       },
    ],
 };

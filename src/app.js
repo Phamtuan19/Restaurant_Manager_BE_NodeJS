@@ -34,10 +34,6 @@ app.use(function (req, res, next) {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-app.get('/', (req, res) => {
-   res.json({ ...adminUserRoute });
-});
-
 routes.forEach((item) =>
    item.routes.forEach((route) =>
       app.use('/api' + item.prefix + route.path, route.route),

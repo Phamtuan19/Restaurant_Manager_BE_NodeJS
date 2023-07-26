@@ -1,5 +1,10 @@
-import { responseSuccess } from '../helpers/response';
-import userSchema from '../models/users.model';
+import { trace } from 'joi';
+import { responseError, responseSuccess } from '../helpers/response';
+import UserSchema from '../models/users.model';
+import bcrypt from 'bcrypt';
+import userRepository from '../repositories/user.repository';
+
+// *************************************** API ADMIN ***************************************
 
 export const login = async (req, res) => {
    try {
@@ -25,7 +30,7 @@ export const validate = (data) => {
 export const register = async (req, res) => {
    try {
       const body = req.body;
-      const user = await userSchema(body).save();
+      const user = await UserSchema(body).save();
       return res.status(200).json({ message: 'Đăng ký thành công!', user });
    } catch (error) {
       res.status(400).json({ message: 'Đăng ký không thành công!', error });
@@ -85,13 +90,51 @@ export const getAll = async (req, res) => {
    }
 };
 
+// *************************************** API COMMON ***************************************
+
+// [GET]
 export const getUser = async (req, res) => {
    try {
-      const user = res.locals.user;
+      const user = await UserSchema.findById(res.locals.user._id);
 
-      res.status(200).json({ message: 'Login success', ...user });
+      res.status(200).json({ message: 'Login success', data: user });
    } catch (error) {
       res.status(200).json({ message: 'Login failed', error });
+   }
+};
+
+// [PUT] change password
+export const changePassword = async (req, res) => {
+   try {
+      const { currentPassword, newPassword } = req.body;
+
+      const user = await UserSchema.findById(res.locals.user._id);
+
+      if (!user) return responseError(res, { message: 'Người dùng không tồn tại!' });
+
+      if (!user.authenticate(currentPassword)) return responseError(res, { message: 'Mật khẩu không chính xác!' });
+
+      user.password = newPassword;
+      await user.save();
+
+      return responseSuccess(res, { message: 'Thay đổi mật khẩu thành công.' });
+   } catch (error) {
+      return responseError(res, error);
+   }
+};
+
+// [PUT] edit
+export const update = async (req, res) => {
+   try {
+      const body = req.body;
+
+      const user = await UserSchema.findById(res.locals.user._id);
+
+      await userRepository.updateUser(res.locals.user._id, body);
+
+      return responseSuccess(res, { message: 'Cập nhật thành công.' });
+   } catch (error) {
+      return responseError(res, error);
    }
 };
 
